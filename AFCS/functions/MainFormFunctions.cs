@@ -11,7 +11,6 @@ namespace AFCS
         private readonly string AFCS;
         readonly SqlConnection conn;
 
-        public DataTable dt = new DataTable();
         public MainFormFunctions()
         {
             this.AFCS = System.Configuration.ConfigurationManager.AppSettings["AFCS"];
@@ -21,9 +20,11 @@ namespace AFCS
         public string GetStudents()
         {
             SqlCommand cmd = new SqlCommand("sp_get_students", conn);
+
             cmd.CommandTimeout = 300;
 
             SqlDataAdapter da = new SqlDataAdapter(cmd);
+            DataTable dt = new DataTable();
 
             try
             {
@@ -51,23 +52,24 @@ namespace AFCS
         public void AddStudent(Student s)
         {
             SqlCommand cmd = new SqlCommand("sp_add_student", conn);
+            cmd.CommandType = CommandType.StoredProcedure;
+
             cmd.Parameters.AddWithValue("@student_name", s.Name);
             cmd.Parameters.AddWithValue("@student_level", s.Level);
             cmd.Parameters.AddWithValue("@school_year", s.School_Year);
-            cmd.CommandTimeout = 300;
 
-            SqlDataAdapter da = new SqlDataAdapter(cmd);
+            cmd.CommandTimeout = 300;
 
             try
             {
                 if (conn.State == ConnectionState.Open)
                 {
-                    da.Fill(dt);
+                    cmd.ExecuteNonQuery();
                 }
                 else
                 {
                     conn.Open();
-                    da.Fill(dt);
+                    cmd.ExecuteNonQuery();
                 }
             }
             catch (SqlException sqlex)
